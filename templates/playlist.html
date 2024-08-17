@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download YouTube Playlist</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Download YouTube Playlist</h1>
+    <form id="playlistForm" method="POST">
+        <label for="playlist_url">YouTube Playlist URL:</label>
+        <input type="text" id="playlist_url" name="playlist_url" required>
+        <button type="submit">Download</button>
+    </form>
+
+    <div id="progress" style="margin-top: 20px;">
+        <h2>Progress</h2>
+        <ul id="progressList"></ul>
+    </div>
+
+    <script type="text/javascript">
+        $('#playlistForm').submit(function(e) {
+            e.preventDefault();
+            $('#progress').text('Starting download...');
+
+            $.ajax({
+                url: "/download-playlist",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.status === 'completed') {
+                        $('#progress').append('<p>Download completed!</p>');
+                    } else if (response.status === 'error') {
+                        $('#progress').append('<p>Error: ' + response.message + '</p>');
+                    }
+                }
+            });
+
+            function updateProgress() {
+                $.get("/check-progress", function(data) {
+                    if (data.progress) {
+                        let progressHtml = `<li>${data.progress.title}: ${data.progress.progress} - ${data.progress.current} of ${data.progress.total}</li>`;
+                        $('#progressList').html(progressHtml);
+                    } else {
+                        $('#progressList').html('<li>No progress available</li>');
+                    }
+                });
+            }
+
+            setInterval(updateProgress, 1000); // Check progress every second
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!-- forecasts.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecasts</title>
+</head>
+<body>
+    <h1>Weather Forecasts</h1>
+
+    <table border="2">
+        <thead>
+            <tr>  
+                
+                <th>date</th>
+                <th>temperature</th>
+                <th>wind_speed</th>
+                <th>pre</th>
+                <th>boone</th>
+                <th>baad</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for forecast in req %}
+            <tr>
+                <td>{{ forecast.date }}</td>
+                <td>{{ forecast.temperature }}</td>
+                <td>{{ forecast.wind_speed }}</td>
+                <td>{{ forecast.pre }}</td>
+                <td>{{ forecast.good_condition }}</td>
+                <td>{{ forecast.bad_condition }}</td>
+             
+            </tr>
+            {% endfor %}
+            
+        </tbody>
+    </table>
+</body>
+</html>

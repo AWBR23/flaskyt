@@ -1,0 +1,61 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+   
+}
+.k{
+    border: 3px solid;
+    padding: 10px;
+    
+
+}
+.flexbox{
+    display: flex;
+    flex-flow: row wrap;
+    padding: 10px;
+    justify-content: space-between;
+  
+}
+.box{
+    background-color: white;
+    padding: 10px;
+    border-radius: 15px;
+    margin: 10px;
+    width:  100px;
+    height: 200px;
+}
+.row .col .sa3a {
+    align-items: center;
+    border: none;
+    text-align: center;
+    color: blue;
+    font-size: 20px;
+}
+.row .col .wind {
+    align-items: center;
+    border: none;
+    text-align: center;
+    color: blueviolet;
+    font-size: 20px;
+    margin-top: 20px;
+}
+.row .col .tem {
+    margin-top: 10px;
+     text-align: center;
+    color: orange;
+   
+
+}
+.pre {
+    margin-top: 10px;
+     text-align: center;
+     color: red;
+
+  
+}
+.aziz :hover {
+    color: red;
+    transition: 4ms;
+
+}
