@@ -7,7 +7,7 @@ app = Flask(__name__)
 DOWNLOADS_DIR = 'static/obrik/'  # Folder named 'obrik' to save downloads
 
 # Replace with your actual proxy details
-PROXY = 'http://123.45.67.89:8080'
+
 
 def _progress_hook(d, progress_file):
     if d['status'] == 'downloading':
@@ -41,7 +41,7 @@ def download_video():
         'format': quality,
         'outtmpl': f'{DOWNLOADS_DIR}/%(title)s.%(ext)s',
         'progress_hooks': [lambda d: _progress_hook(d, progress_file)],
-        'proxy': PROXY  # Added proxy support
+       
     }
 
     try:
