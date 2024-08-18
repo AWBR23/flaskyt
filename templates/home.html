@@ -2,116 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>YouTube Downloader</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="mb-4">YouTube Downloader</h1>
-        <div class="row">
-            <div class="col-md-6">
-                <h2>Download Video</h2>
-                <form id="videoForm">
-                    <div class="form-group">
-                        <label for="video_url">YouTube Video URL:</label>
-                        <input type="text" id="video_url" name="video_url" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="quality">Quality:</label>
-                        <select id="quality" name="quality" class="form-control">
-                            <option value="best">Best</option>
-                            <option value="worst">Worst</option>
-                            <!-- Add more options if needed -->
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Download Video</button>
-                </form>
-                <div id="videoProgress" class="mt-4">
-                    <h3>Progress</h3>
-                    <ul id="videoProgressList" class="list-unstyled"></ul>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <h2>Download Playlist</h2>
-                <form id="playlistForm">
-                    <div class="form-group">
-                        <label for="playlist_url">YouTube Playlist URL:</label>
-                        <input type="text" id="playlist_url" name="playlist_url" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="quality">Quality:</label>
-                        <select id="quality" name="quality" class="form-control">
-                            <option value="best">Best</option>
-                            <option value="worst">Worst</option>
-                            <!-- Add more options if needed -->
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Download Playlist</button>
-                </form>
-                <div id="playlistProgress" class="mt-4">
-                    <h3>Progress</h3>
-                    <ul id="playlistProgressList" class="list-unstyled"></ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript">
-        function updateProgress(selector, progressUrl) {
-            $.get(progressUrl, function(data) {
-                if (data.progress) {
-                    let progressHtml = `<li>${data.progress.title}: ${data.progress.progress} - ${data.progress.current} of ${data.progress.total}</li>`;
-                    $(selector).html(progressHtml);
-                } else {
-                    $(selector).html('<li>No progress available</li>');
-                }
-            });
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Progress</title>
+    <script>
+        function updateProgress(progressType) {
+            fetch(`/check-progress/${progressType}`)
+                .then(response => response.json())
+                .then(data => {
+                    const { title, progress, current, total } = data.progress;
+                    document.getElementById('progress-title').innerText = `Title: ${title}`;
+                    document.getElementById('progress-bar').style.width = progress;
+                    document.getElementById('progress-current').innerText = `Current: ${current}`;
+                    document.getElementById('progress-total').innerText = `Total: ${total}`;
+                })
+                .catch(error => console.error('Error fetching progress:', error));
         }
 
-        $('#videoForm').submit(function(e) {
-            e.preventDefault();
-            $('#videoProgress').text('Starting download...');
+        function startProgressPolling(progressType) {
+            updateProgress(progressType);
+            setInterval(() => updateProgress(progressType), 5000); // Poll every 5 seconds
+        }
+    </script>
+    <style>
+        #progress-bar-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+        #progress-bar {
+            height: 30px;
+            background-color: #4caf50;
+            text-align: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Download Progress</h1>
+    <div>
+        <h2 id="progress-title">Title: N/A</h2>
+        <div id="progress-bar-container">
+            <div id="progress-bar">0%</div>
+        </div>
+        <p id="progress-current">Current: 0</p>
+        <p id="progress-total">Total: 0</p>
+    </div>
+    <form id="download-form">
+        <input type="text" id="video-url" name="video_url" placeholder="Enter video URL">
+        <input type="text" id="quality" name="quality" placeholder="Enter quality (e.g., best)">
+        <button type="button" onclick="startDownload('video')">Download Video</button>
+        <button type="button" onclick="startDownload('playlist')">Download Playlist</button>
+    </form>
 
-            $.ajax({
-                url: "/download-video",
-                type: "POST",
-                data: $(this).serialize(),
-                success: function(response) {
-                    if (response.status === 'completed') {
-                        $('#videoProgress').append('<p>Download completed!</p>');
-                    } else if (response.status === 'error') {
-                        $('#videoProgress').append('<p>Error: ' + response.message + '</p>');
-                    }
+    <script>
+        function startDownload(type) {
+            const url = type === 'video' ? document.getElementById('video-url').value : document.getElementById('playlist-url').value;
+            const quality = document.getElementById('quality').value;
+
+            fetch(`/download-${type}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    video_url: url,
+                    quality: quality
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    startProgressPolling(type);
+                } else {
+                    console.error('Download error:', data.message);
                 }
-            });
-
-            setInterval(function() {
-                updateProgress('#videoProgressList', '/check-progress/video');
-            }, 1000); // Check progress every second
-        });
-
-        $('#playlistForm').submit(function(e) {
-            e.preventDefault();
-            $('#playlistProgress').text('Starting download...');
-
-            $.ajax({
-                url: "/download-playlist",
-                type: "POST",
-                data: $(this).serialize(),
-                success: function(response) {
-                    if (response.status === 'completed') {
-                        $('#playlistProgress').append('<p>Download completed!</p>');
-                    } else if (response.status === 'error') {
-                        $('#playlistProgress').append('<p>Error: ' + response.message + '</p>');
-                    }
-                }
-            });
-
-            setInterval(function() {
-                updateProgress('#playlistProgressList', '/check-progress/playlist');
-            }, 1000); // Check progress every second
-        });
+            })
+            .catch(error => console.error('Error initiating download:', error));
+        }
     </script>
 </body>
 </html>

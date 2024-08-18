@@ -86,10 +86,11 @@ def check_progress(progress_type):
         with open(progress_file, 'r') as f:
             progress = json.load(f)
         return jsonify({'progress': progress})
-    return jsonify({'progress': 'No progress available'})
+    return jsonify({'progress': {'title': 'N/A', 'progress': '0%', 'current': '0', 'total': '0'}})
 
 @app.route('/downloads/<path:filename>')
 def download_file(filename):
     return send_from_directory(DOWNLOADS_DIR, filename)
 
-
+if __name__ == '__main__':
+    app.run(debug=True)
